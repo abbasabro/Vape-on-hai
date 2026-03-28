@@ -1,11 +1,11 @@
 import { Product, Category } from './types';
 
-export const CATEGORIES: Category[] = [
-  'Vapes',
-  'Disposable Vapes',
-  'Pod Systems',
-  'E-liquids',
-  'Accessories'
+export const CATEGORIES = [
+  { name: "Vapes", slug: "vapes" },
+  { name: "Disposable Vapes", slug: "disposable-vape" },
+  { name: "Pod Systems", slug: "pod-system" },
+  { name: "E-Liquids", slug: "e-liquids" },
+  { name: "Accessories", slug: "accessories" }
 ];
 
 export const BRANDS = [

@@ -1,16 +1,80 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { PRODUCTS } from '../constants';
+import { supabase } from '../supabase';
 import { motion } from 'motion/react';
 import { ShoppingCart, Heart, Share2, ShieldCheck, Truck, Zap, Star, ChevronLeft } from 'lucide-react';
 import { useCart } from '../components/CartProvider';
 import ProductCard from '../components/ProductCard';
+import { useWishlist } from '../components/WishlistProvider';
+import { removeFromWishlist, addToWishlist, getWishlist } from '../api/wishlist';
 
 export default function ProductDetail() {
   const { id } = useParams();
-  const product = PRODUCTS.find(p => p.id === id);
+  const [product, setProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
   const { addToCart } = useCart();
+  const { toggleWishlist, isWishlisted } = useWishlist();
+  
+  const handleShare = () => {
+    const url = window.location.href;
 
+    if (navigator.share) {
+      navigator.share({
+        title: product?.name,
+        url: url
+      });
+    } else {
+      navigator.clipboard.writeText(url);
+      alert('Link copied to clipboard!');
+    }
+  };
+
+  useEffect(() => {
+    async function fetchProduct() {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+
+        setProduct(data);
+
+        if (data) {
+          const { data: related, error: relatedError } = await supabase
+            .from('products')
+            .select('*')
+            .eq('category', data.category)
+            .neq('id', data.id)
+            .limit(4);
+
+          if (relatedError) console.error(relatedError);
+
+          setRelatedProducts(related || []);
+        }
+      } catch (err) {
+        console.error('Error fetching product:', err);
+      } finally {
+        setLoading(false);
+      }
+
+    }
+
+    if (id) fetchProduct();
+
+
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center text-white">
+        Loading product...
+      </div>
+    );
+  }
   if (!product) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center text-white">
@@ -22,7 +86,8 @@ export default function ProductDetail() {
     );
   }
 
-  const relatedProducts = PRODUCTS.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
+
+
 
   return (
     <div className="bg-black min-h-screen pt-24 pb-20">
@@ -40,9 +105,9 @@ export default function ProductDetail() {
             className="space-y-6"
           >
             <div className="aspect-square rounded-3xl overflow-hidden border border-white/10 bg-zinc-900/50 relative group">
-              <img 
-                src={product.image} 
-                alt={product.name} 
+              <img
+                src={product.image}
+                alt={product.name}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 referrerPolicy="no-referrer"
               />
@@ -71,7 +136,7 @@ export default function ProductDetail() {
 
             <p className="text-cyan-400 font-bold uppercase tracking-[0.3em] text-sm mb-2">{product.brand}</p>
             <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter uppercase mb-6 leading-none">{product.name}</h1>
-            
+
             <div className="flex items-end gap-4 mb-10">
               <span className="text-4xl font-black text-white">Rs. {product.price.toLocaleString()}</span>
               {product.originalPrice && (
@@ -84,17 +149,23 @@ export default function ProductDetail() {
             </p>
 
             <div className="flex flex-wrap gap-4 mb-12">
-              <button 
+              <button
                 onClick={() => addToCart(product)}
                 className="flex-grow md:flex-none px-12 py-5 bg-white text-black font-black uppercase tracking-[0.2em] hover:bg-cyan-400 transition-all flex items-center justify-center gap-3 shadow-2xl shadow-white/5"
               >
                 Add to Cart
                 <ShoppingCart size={20} />
               </button>
-              <button className="w-16 h-16 border border-white/10 rounded-2xl flex items-center justify-center text-white/50 hover:text-cyan-400 hover:border-cyan-400 transition-all">
-                <Heart size={24} />
+              <button
+                onClick={() => toggleWishlist(product.id)}
+                className="w-16 h-16 border border-white/10 rounded-2xl flex items-center justify-center text-white/50 hover:text-cyan-400 hover:border-cyan-400 transition-all">
+                <Heart
+                  size={24}
+                  className={isWishlisted(product.id) ? "text-red-500" : "text-white/50"} />
               </button>
-              <button className="w-16 h-16 border border-white/10 rounded-2xl flex items-center justify-center text-white/50 hover:text-cyan-400 hover:border-cyan-400 transition-all">
+              <button
+                onClick={handleShare}
+                className="w-16 h-16 border border-white/10 rounded-2xl flex items-center justify-center text-white/50 hover:text-cyan-400 hover:border-cyan-400 transition-all">
                 <Share2 size={24} />
               </button>
             </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Search, Menu, X, User, Heart } from 'lucide-react';
+import { Package, ShoppingCart, Search, Menu, X, User, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { CATEGORIES } from '../constants';
@@ -15,6 +15,28 @@ export default function Navbar() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const location = useLocation();
   const { cartCount } = useCart();
+
+
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    async function checkAdmin() {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) return;
+
+      const { data } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
+
+      if (data?.is_admin) {
+        setIsAdmin(true);
+      }
+    }
+
+    checkAdmin();
+  }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -57,22 +79,22 @@ export default function Navbar() {
     <>
       <AnimatePresence>
         {isSearchOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[60] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4"
           >
-            <button 
+            <button
               onClick={() => setIsSearchOpen(false)}
               className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors"
             >
               <X size={32} />
             </button>
             <form onSubmit={handleSearch} className="w-full max-w-3xl">
-              <input 
+              <input
                 autoFocus
-                type="text" 
+                type="text"
                 placeholder="Search products, brands, categories..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -88,7 +110,7 @@ export default function Navbar() {
         <div className="bg-black text-white text-[10px] md:text-xs py-2 px-4 text-center font-medium tracking-wider uppercase border-b border-white/10 relative z-50">
           Same-Day Delivery in Karachi • Authentic Products Guaranteed • Discounts Available
         </div>
-        <nav 
+        <nav
           className={cn(
             "transition-all duration-300 px-4 md:px-8 py-4 flex items-center justify-between",
             isScrolled ? "bg-black/80 backdrop-blur-lg border-b border-white/10 py-3" : "bg-transparent"
@@ -101,20 +123,20 @@ export default function Navbar() {
             </Link>
 
             <div className="hidden lg:flex items-center gap-6">
-              {CATEGORIES.map((cat) => (
-                <Link 
-                  key={cat} 
-                  to={`/category/${cat.toLowerCase().replace(/ /g, '-')}`}
-                  className="text-sm font-medium text-white/70 hover:text-cyan-400 transition-colors uppercase tracking-widest"
+              {CATEGORIES.map(cat => (
+                <Link
+                  key={cat.slug}
+                  to={`/category/${cat.slug}`}
+                  className="..."
                 >
-                  {cat}
+                  {cat.name}
                 </Link>
               ))}
             </div>
           </div>
 
           <div className="flex items-center gap-4 md:gap-6">
-            <button 
+            <button
               onClick={() => setIsSearchOpen(true)}
               className="text-white/70 hover:text-cyan-400 transition-colors"
             >
@@ -127,6 +149,17 @@ export default function Navbar() {
               <User size={20} />
               {user && <span className="text-[10px] font-bold uppercase tracking-widest max-w-[80px] truncate">{user.user_metadata?.full_name?.split(' ')[0] || user.email?.split('@')[0]}</span>}
             </Link>
+            {user && isAdmin && (
+              <Link to="/admin" className="text-white/70 hover:text-cyan-400">
+                Admin
+              </Link>
+            )}
+            <Link
+              to="/orders"
+              className="text-white/70 hover:text-cyan-400 transition-colors hidden sm:block"
+            >
+              <Package size={20} />
+            </Link>
             <Link to="/cart" className="text-white/70 hover:text-cyan-400 transition-colors relative">
               <ShoppingCart size={20} />
               {cartCount > 0 && (
@@ -135,7 +168,7 @@ export default function Navbar() {
                 </span>
               )}
             </Link>
-            <button 
+            <button
               className="lg:hidden text-white"
               onClick={() => setIsMobileMenuOpen(true)}
             >
@@ -147,7 +180,7 @@ export default function Navbar() {
 
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <motion.div 
+          <motion.div
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
@@ -165,21 +198,25 @@ export default function Navbar() {
             </div>
 
             <div className="flex flex-col gap-8">
-              {CATEGORIES.map((cat) => (
-                <Link 
-                  key={cat} 
-                  to={`/category/${cat.toLowerCase().replace(/ /g, '-')}`}
-                  className="text-2xl font-bold text-white hover:text-cyan-400 transition-colors uppercase tracking-widest"
+              {CATEGORIES.map(cat => (
+                <Link
+                  key={cat.slug}
+                  to={`/category/${cat.slug}`}
+                  className="..."
                 >
-                  {cat}
+                  {cat.name}
                 </Link>
               ))}
               <div className="h-px bg-white/10 my-4" />
               <Link to="/account" className="text-xl font-medium text-white/70 flex items-center gap-4">
                 <User size={24} /> My Account
               </Link>
+
               <Link to="/wishlist" className="text-xl font-medium text-white/70 flex items-center gap-4">
                 <Heart size={24} /> Wishlist
+              </Link>
+              <Link to="/orders" className="text-xl font-medium text-white/70 flex items-center gap-4">
+                <Package size={24} /> Orders
               </Link>
             </div>
 

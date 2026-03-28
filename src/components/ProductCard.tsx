@@ -4,7 +4,7 @@ import { ShoppingCart, Heart, Star } from 'lucide-react';
 import { Product } from '../types';
 import { cn } from '../lib/utils';
 import { Link } from 'react-router-dom';
-
+import { useWishlist } from './WishlistProvider';
 import { useCart } from './CartProvider';
 
 interface ProductCardProps {
@@ -13,6 +13,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
+  const { toggleWishlist, isWishlisted } = useWishlist();
 
   return (
     <motion.div
@@ -33,15 +34,28 @@ export default function ProductCard({ product }: ProductCardProps) {
         )}
       </div>
 
-      <button className="absolute top-4 right-4 z-10 text-white/30 hover:text-cyan-400 transition-colors">
-        <Heart size={20} />
+      <button
+        onClick={(e) => {
+          e.preventDefault(); // 🔥 important (prevents link click)
+          toggleWishlist(product.id);
+        }}
+        className="absolute top-4 right-4 z-10 transition-colors"
+      >
+        <Heart
+          size={20}
+          className={
+            isWishlisted(product.id)
+              ? "text-red-500"
+              : "text-white/30 hover:text-cyan-400"
+          }
+        />
       </button>
 
       {/* Image */}
       <Link to={`/product/${product.id}`} className="block relative aspect-square overflow-hidden">
-        <img 
-          src={product.image} 
-          alt={product.name} 
+        <img
+          src={product.image}
+          alt={product.name}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           referrerPolicy="no-referrer"
         />
@@ -54,7 +68,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <Star size={12} className="text-cyan-400 fill-cyan-400" />
           <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">{product.rating} ({product.reviews})</span>
         </div>
-        
+
         <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-[0.2em] mb-1">{product.brand}</p>
         <h3 className="text-lg font-bold text-white mb-4 group-hover:text-cyan-400 transition-colors line-clamp-1">
           {product.name}
@@ -67,8 +81,8 @@ export default function ProductCard({ product }: ProductCardProps) {
             )}
             <span className="text-xl font-black text-white">Rs. {product.price.toLocaleString()}</span>
           </div>
-          
-          <button 
+
+          <button
             onClick={(e) => {
               e.preventDefault();
               addToCart(product);

@@ -72,11 +72,6 @@ export default function Footer() {
         <p className="text-xs text-white/40">
           © {new Date().getFullYear()} Vape On Hai (Saba Avenue). All rights reserved.
         </p>
-        <div className="flex gap-6 grayscale opacity-50">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-4" />
-          <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-6" />
-          <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-4" />
-        </div>
       </div>
     </footer>
   );
