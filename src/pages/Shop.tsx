@@ -29,26 +29,29 @@ export default function Shop() {
   }, []);
 
   const filteredProducts = products
-    .filter(p => {
-      const matchesSearch =
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.brand?.toLowerCase().includes(searchQuery.toLowerCase());
+  .filter(p => {
+    const name = (p.name || '').toLowerCase();
+    const brand = (p.brand || '').toLowerCase();
+    const search = searchQuery.toLowerCase();
 
-      const matchesCategory =
-        !category || p.category === category;
+    const matchesSearch =
+      name.includes(search) ||
+      brand.includes(search);
 
-      const matchesBrand =
-        !selectedBrand || p.brand === selectedBrand;
+    const matchesCategory =
+      !category || (p.category || '') === category;
 
-      return matchesSearch && matchesCategory && matchesBrand;
-    })
-    .sort((a, b) => {
-      if (sortBy === 'price-low') return a.price - b.price;
-      if (sortBy === 'price-high') return b.price - a.price;
-      if (sortBy === 'best-selling') return b.reviews - a.reviews;
-      return 0;
-    });
+    const matchesBrand =
+      !selectedBrand || p.brand === selectedBrand;
 
+    return matchesSearch && matchesCategory && matchesBrand;
+  })
+  .sort((a, b) => {
+    if (sortBy === 'price-low') return (a.price || 0) - (b.price || 0);
+    if (sortBy === 'price-high') return (b.price || 0) - (a.price || 0);
+    if (sortBy === 'best-selling') return (b.reviews || 0) - (a.reviews || 0);
+    return 0;
+  });
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center text-white">
