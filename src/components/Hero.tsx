@@ -60,7 +60,7 @@ export default function Hero() {
         >
           <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/20 to-purple-500/20 rounded-3xl blur-3xl" />
           <img 
-            src="https://picsum.photos/seed/hero-vape/800/800" 
+            src="https://images.unsplash.com/photo-1616065787198-a41b9ab94ef2?auto=format&fit=crop&w=800&q=80" 
             alt="Premium Vape Device" 
             className="relative z-10 w-full h-auto rounded-3xl shadow-2xl border border-white/10"
             referrerPolicy="no-referrer"

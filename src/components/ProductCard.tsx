@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { useWishlist } from './WishlistProvider';
 import { useCart } from './CartProvider';
 
+
 interface ProductCardProps {
   product: Product;
 }
@@ -22,16 +23,24 @@ export default function ProductCard({ product }: ProductCardProps) {
     >
       {/* Badges */}
       <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-        {product.discount && (
-          <span className="bg-cyan-500 text-black text-[10px] font-black px-2 py-1 rounded uppercase tracking-tighter">
+        {product.discount > 0 && (
+          <span className="absolute top-3 left-3 bg-cyan-500 text-black text-xs font-bold px-2 py-1 rounded">
             -{product.discount}%
           </span>
         )}
+
         {product.isTrending && (
-          <span className="bg-purple-500 text-white text-[10px] font-black px-2 py-1 rounded uppercase tracking-tighter">
-            Trending
+          <span className="absolute top-10 left-3 bg-purple-500 text-white text-xs font-bold px-2 py-1 rounded">
+            TRENDING
           </span>
         )}
+
+        {product.isBestSeller && (
+          <span className="absolute top-16 left-3 bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded">
+            BEST SELLER
+          </span>
+        )}
+
       </div>
 
       <button
