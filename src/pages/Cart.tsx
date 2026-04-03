@@ -4,8 +4,10 @@ import { Trash2, Plus, Minus, ArrowRight, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 
+const DELIVERY_FEE = 200;
 export default function Cart() {
   const { cart, removeFromCart, updateQuantity, cartTotal } = useCart();
+  const total = cartTotal + DELIVERY_FEE;
 
   if (cart.length === 0) {
     return (
@@ -92,12 +94,12 @@ export default function Cart() {
                 </div>
                 <div className="flex justify-between text-white/60">
                   <span>Delivery</span>
-                  <span className="text-cyan-400 font-bold uppercase tracking-widest text-[10px]">Free</span>
+                  <span className="text-cyan-400 font-bold uppercase tracking-widest text-[10px]">Rs. {DELIVERY_FEE}</span>
                 </div>
                 <div className="h-px bg-white/10 my-4" />
                 <div className="flex justify-between text-2xl font-black text-white">
                   <span>Total</span>
-                  <span>Rs. {cartTotal.toLocaleString()}</span>
+                  <span>Rs. {total}</span>
                 </div>
               </div>
 
