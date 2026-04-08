@@ -18,8 +18,8 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install deps
-        run: npm install
+      - name: Install deps (safe)
+        run: npm install --no-optional
 
       - name: Type check (optional)
         run: npm run type-check || true
