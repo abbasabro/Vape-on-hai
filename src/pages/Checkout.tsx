@@ -42,21 +42,57 @@ export default function Checkout() {
     if (cart.length === 0) navigate('/orders');
   }, [cart]);
 
+
+  // ONLY REPLACE YOUR onSubmit FUNCTION WITH THIS
+
   const onSubmit = async (data: CheckoutForm) => {
-
-
     setIsSubmitting(true);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
 
+      if (!user) {
+        toast.error("Please login first");
+        return;
+      }
+
+      // ✅ STEP 1 — CHECK + UPDATE STOCK (ONLY ONCE)
+      for (const item of cart) {
+        const { data: product, error } = await supabase
+          .from('products')
+          .select('stock')
+          .eq('id', item.id)
+          .single();
+
+        if (error || !product) {
+          toast.error("Product not found");
+          return;
+        }
+
+        if ((product.stock || 0) < item.quantity) {
+          toast.error(`${item.name} is out of stock`);
+          return;
+        }
+
+        const { data: updated, error: updateError } = await supabase
+          .from('products')
+          .update({
+            stock: product.stock - item.quantity
+          })
+          .eq('id', item.id)
+          .select();
+
+        console.log("UPDATE RESULT:", updated);
+        console.log("UPDATE ERROR:", updateError);
+      }
+
       const fullName = `${data.firstName || ''} ${data.lastName}`.trim();
 
-      // ✅ 1. CREATE ORDER
+      // ✅ STEP 2 — CREATE ORDER
       const { data: order, error } = await supabase
         .from('orders')
         .insert({
-          user_id: user?.id,
+          user_id: user.id,
           full_name: fullName,
           email: data.email,
           phone: data.phone,
@@ -68,35 +104,12 @@ export default function Checkout() {
         .select()
         .single();
 
-      if (error) throw error;
-
-
-      // 🔥 2. STOCK LOGIC (PASTE HERE)
-      for (const item of cart) {
-        const { data: product, error } = await supabase
-          .from('products')
-          .select('stock')
-          .eq('id', item.id)
-          .single();
-
-        if (error || !product) throw new Error('Product not found');
-
-        if (product.stock < item.quantity) {
-          throw new Error(`${item.name} is out of stock`);
-        }
-
-        const { error: updateError } = await supabase
-          .from('products')
-          .update({
-            stock: product.stock - item.quantity
-          })
-          .eq('id', item.id);
-
-        if (updateError) throw updateError;
+      if (error || !order) {
+        toast.error("Order creation failed");
+        return;
       }
 
-
-      // ✅ 3. INSERT ORDER ITEMS
+      // ✅ STEP 3 — INSERT ITEMS
       const items = cart.map(item => ({
         order_id: order.id,
         product_id: item.id,
@@ -110,24 +123,23 @@ export default function Checkout() {
         .from('order_items')
         .insert(items);
 
-      if (itemsError) throw itemsError;
-
-      if (error) throw error;
-
+      if (itemsError) {
+        toast.error("Order items failed");
+        return;
+      }
 
       toast.success('Order placed successfully 🚀');
 
       clearCart();
-      navigate('/orders'); // ✅ FIXED
+      navigate('/orders');
 
     } catch (err) {
       console.error(err);
-      toast.error('Failed to place order');
+      toast.error('Something went wrong');
     } finally {
       setIsSubmitting(false);
     }
   };
-
   return (
     <div className="bg-black min-h-screen pt-[140px] pb-20 px-4 md:px-8">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-3 gap-12">

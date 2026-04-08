@@ -21,6 +21,7 @@ export default function Admin() {
         description: '',
         rating: '',
         reviews: '',
+        stock: '',
         is_trending: false,
         is_best_seller: false
     });
@@ -111,6 +112,7 @@ export default function Admin() {
 
                 rating: form.rating ? Number(form.rating) : 0,
                 reviews: form.reviews ? Number(form.reviews) : 0,
+                stock: form.stock ? Number(form.stock) : 0,
 
                 is_trending: form.is_trending,
                 is_best_seller: form.is_best_seller,
@@ -132,6 +134,7 @@ export default function Admin() {
                 description: '',
                 rating: '',
                 reviews: '',
+                stock: '',
                 is_trending: false,
                 is_best_seller: false
             });
@@ -199,6 +202,13 @@ export default function Admin() {
                         value={form.description}
                         onChange={(e) => setForm({ ...form, description: e.target.value })}
                         className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-cyan-500 outline-none"
+                    />
+                    <input
+                        placeholder="Stock Quantity"
+                        type="number"
+                        value={form.stock}
+                        onChange={(e) => setForm({ ...form, stock: e.target.value })}
+                        className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:border-cyan-500"
                     />
                     <div className="grid grid-cols-2 gap-4">
 

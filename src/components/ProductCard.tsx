@@ -2,11 +2,9 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { ShoppingCart, Heart, Star } from 'lucide-react';
 import { Product } from '../types';
-import { cn } from '../lib/utils';
 import { Link } from 'react-router-dom';
 import { useWishlist } from './WishlistProvider';
 import { useCart } from './CartProvider';
-
 
 interface ProductCardProps {
   product: Product;
@@ -21,34 +19,36 @@ export default function ProductCard({ product }: ProductCardProps) {
       whileHover={{ y: -10 }}
       className="group bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden relative"
     >
-      {/* Badges */}
+      {/* BADGES */}
       <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-        {product.discount > 0 && (
-          <span className="absolute top-3 left-3 bg-cyan-500 text-black text-xs font-bold px-2 py-1 rounded">
-            -{product.discount}%
+
+        {product.stock === 0 && (
+          <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+            OUT OF STOCK
           </span>
         )}
 
+
         {product.isTrending && (
-          <span className="absolute top-10 left-3 bg-purple-500 text-white text-xs font-bold px-2 py-1 rounded">
+          <span className="bg-purple-500 text-white text-xs font-bold px-2 py-1 rounded">
             TRENDING
           </span>
         )}
 
         {product.isBestSeller && (
-          <span className="absolute top-16 left-3 bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded">
+          <span className="bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded">
             BEST SELLER
           </span>
         )}
-
       </div>
 
+      {/* WISHLIST */}
       <button
         onClick={(e) => {
-          e.preventDefault(); // 🔥 important (prevents link click)
+          e.preventDefault();
           toggleWishlist(product.id);
         }}
-        className="absolute top-4 right-4 z-10 transition-colors"
+        className="absolute top-4 right-4 z-10"
       >
         <Heart
           size={20}
@@ -60,46 +60,61 @@ export default function ProductCard({ product }: ProductCardProps) {
         />
       </button>
 
-      {/* Image */}
-      <Link to={`/product/${product.id}`} className="block relative aspect-square overflow-hidden">
+      {/* IMAGE */}
+      <Link to={`/product/${product.id}`} className="block aspect-square overflow-hidden">
         <img
           src={product.image}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-          referrerPolicy="no-referrer"
+          className="w-full h-full object-cover group-hover:scale-110 transition"
         />
-        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
       </Link>
 
-      {/* Content */}
+      {/* CONTENT */}
       <div className="p-6">
         <div className="flex items-center gap-1 mb-2">
           <Star size={12} className="text-cyan-400 fill-cyan-400" />
-          <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">{product.rating} ({product.reviews})</span>
+          <span className="text-xs text-white/50">
+            {product.rating} ({product.reviews})
+          </span>
         </div>
 
-        <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-[0.2em] mb-1">{product.brand}</p>
-        <h3 className="text-lg font-bold text-white mb-4 group-hover:text-cyan-400 transition-colors line-clamp-1">
+        <p className="text-xs text-cyan-400 uppercase mb-1">{product.brand}</p>
+
+        <h3 className="text-lg font-bold text-white mb-4">
           {product.name}
         </h3>
 
-        <div className="flex items-end justify-between">
-          <div className="flex flex-col">
+        <div className="flex justify-between items-center">
+
+          <div>
             {product.originalPrice && (
-              <span className="text-xs text-white/30 line-through font-medium">Rs. {product.originalPrice.toLocaleString()}</span>
+              <p className="text-xs text-white/30 line-through">
+                Rs. {product.originalPrice}
+              </p>
             )}
-            <span className="text-xl font-black text-white">Rs. {product.price.toLocaleString()}</span>
+            <p className="text-xl font-bold text-white">
+              Rs. {product.price}
+            </p>
           </div>
 
           <button
+            disabled={product.stock === 0}
             onClick={(e) => {
               e.preventDefault();
               addToCart(product);
             }}
-            className="w-10 h-10 bg-white text-black rounded-xl flex items-center justify-center hover:bg-cyan-400 transition-all shadow-lg shadow-white/5"
+            className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+              product.stock === 0
+                ? 'bg-gray-700 cursor-not-allowed'
+                : 'bg-white hover:bg-cyan-400'
+            }`}
           >
-            <ShoppingCart size={18} />
+            <ShoppingCart 
+            size={18}
+            className={product.stock === 0 ? "text-white/50" : "text-black"} 
+            />
           </button>
+
         </div>
       </div>
     </motion.div>
