@@ -19,7 +19,7 @@ jobs:
           node-version: 18
 
       - name: Install deps
-        run: npm ci
+        run: npm install
 
       - name: Type check (optional)
         run: npm run type-check || true
@@ -29,3 +29,5 @@ jobs:
 
       - name: Build
         run: npm run build
+      - name: Clear cache
+        run: npm cache clean --force
